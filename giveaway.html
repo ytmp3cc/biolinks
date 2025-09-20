@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Giveaway Loading</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Montserrat:wght@300;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-dark:#0d0d0f;
+    --panel:#1e1e1f;
+    --accent1:#8a00ff;
+    --accent2:#c700ff;
+    --ip-color:#ffd54f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:
+    radial-gradient(1200px 600px at 85% 75%, #6a00ff 0%, transparent 25%),
+    linear-gradient(135deg,#0f0f10,#121214 60%);color:#fff;font-family:Montserrat,Segoe UI,Arial,Helvetica,sans-serif;position:relative;}
+  .stage{height:100%;display:flex;align-items:center;justify-content:flex-start;padding-left:6%}
+  .panel{width:720px;max-width:84%;padding:48px 64px;background:linear-gradient(180deg,var(--panel),rgba(0,0,0,0.08));transform:skew(-14deg);box-shadow:0 28px 60px rgba(0,0,0,0.7),0 6px 20px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.02);border-radius:2px;position:relative;}
+  .inner{transform:skew(14deg);}
+  h1.title{font-family:'Orbitron',sans-serif;font-size:72px;font-weight:400;color:#f5f5f5;margin-bottom:14px;}
+  .sub{font-size:20px;color:#e8e8e8;opacity:0.9;margin-bottom:18px;}
+  .progress-wrap{width:100%;height:18px;background:linear-gradient(180deg,#2b2b2b,#202020);border-radius:12px;overflow:hidden;margin-bottom:28px;}
+  .progress{height:100%;width:0%;background:linear-gradient(90deg,var(--accent1),var(--accent2));box-shadow:0 2px 18px rgba(139,0,255,0.35);animation:fill 2s forwards;}
+  @keyframes fill {to {width:100%;}}
+
+  /* Giveaway screen */
+  .giveaway{display:none;text-align:center;}
+  .giveaway h2{font-family:'Orbitron',sans-serif;font-size:40px;margin-bottom:20px;}
+  .giveaway img{max-width:300px;border-radius:10px;margin:20px auto;display:block;}
+  .input-wrap{margin:20px 0;}
+  .input-wrap input{padding:10px 14px;font-size:16px;border:none;border-radius:6px;width:70%;max-width:320px;}
+  .enter-btn{display:block;margin:12px auto 0 auto;background:linear-gradient(90deg,var(--accent1),var(--accent2));border:none;padding:12px 20px;font-size:16px;font-weight:600;border-radius:8px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.4);}
+  .enter-btn:hover{opacity:0.9;}
+
+  /* Success screen */
+  .success{display:none;text-align:center;}
+  .success h2{font-family:'Orbitron',sans-serif;font-size:44px;margin-bottom:20px;color:#90ee90;}
+
+  /* IP block in bottom-right corner */
+  .ip-block{position:fixed;bottom:24px;right:24px;padding:14px 18px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.06));border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,0.5);display:none;}
+  .ip-big{font-family:'Orbitron',sans-serif;font-size:28px;color:var(--ip-color);font-weight:700;margin-bottom:6px;}
+  .addr{font-size:16px;color:#eee;opacity:0.95;font-weight:600;}
+</style>
+</head>
+<body>
+  <div class="stage">
+    <div class="panel">
+      <div class="inner" id="content">
+        <!-- Loading screen -->
+        <h1 class="title" id="loading-title">Loading</h1>
+        <div class="sub" id="loading-sub">Preparing assets and links...</div>
+        <div class="progress-wrap"><div id="progress" class="progress"></div></div>
+
+        <!-- Giveaway screen -->
+        <div id="giveaway" class="giveaway">
+          <h2>ESOK SEKOLAH (GALAXY)</h2>
+          <img src="https://files.catbox.moe/me6rrc.png" alt="Giveaway Item">
+          <div class="input-wrap">
+            <input type="text" id="username" placeholder="Enter your Roblox username">
+          </div>
+          <button class="enter-btn" id="enterBtn">Enter Giveaway</button>
+        </div>
+
+        <!-- Success screen -->
+        <div id="success" class="success">
+          <h2>Successfully entered</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- IP block bottom-right -->
+  <div class="ip-block" id="ip-block">
+    <div class="ip-big" id="ip-text">IP: …</div>
+    <div class="addr" id="addr-text">Address: …</div>
+  </div>
+
+<script>
+(async () => {
+  const giveaway = document.getElementById('giveaway');
+  const success = document.getElementById('success');
+  const enterBtn = document.getElementById('enterBtn');
+  const loadingTitle = document.getElementById('loading-title');
+  const loadingSub = document.getElementById('loading-sub');
+  const ipBlock = document.getElementById('ip-block');
+  const ipText = document.getElementById('ip-text');
+  const addrText = document.getElementById('addr-text');
+
+  // Wait for bar animation (~2.1s)
+  await new Promise(r => setTimeout(r, 2100));
+
+  // Switch to giveaway screen
+  loadingTitle.style.display = "none";
+  loadingSub.style.display = "none";
+  document.querySelector(".progress-wrap").style.display = "none";
+  giveaway.style.display = "block";
+
+  // On enter
+  enterBtn.addEventListener("click", async () => {
+    giveaway.style.display = "none";
+    success.style.display = "block";
+
+    // Show IP block in bottom-right
+    ipBlock.style.display = "block";
+
+    try {
+      const resp = await fetch('https://ipapi.co/json/');
+      const data = await resp.json();
+      ipText.textContent = "IP: " + (data.ip || "Unknown");
+      let address = `${data.city || 'Unknown city'}${data.region?(', '+data.region):''}${data.country_name?(', '+data.country_name):''}`;
+      if (data.postal) address += ` • ${data.postal}`;
+      addrText.textContent = "Address: " + address;
+    } catch {
+      ipText.textContent = "Unable to fetch IP";
+      addrText.textContent = "Unable to fetch location";
+    }
+  });
+})();
+</script>
+</body>
+</html>
