@@ -1,63 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading...</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            background-color: #1a1a1a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #fff;
-            font-family: 'Courier New', Courier, monospace;
-        }
-        .loader {
-            border: 5px solid #333;
-            border-top: 5px solid #ff007f;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .message {
-            position: absolute;
-            top: 20px;
-            font-size: 20px;
-            color: #ff007f;
-            text-shadow: 0 0 5px rgba(255, 0, 127, 0.5);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading...</title>
+  <style>
+    /* Reset/minimal */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #0d0d0d; /* very dark background */
+      color: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loading-container {
+      position: relative;
+      width: 600px;
+      max-width: 90%;
+      padding: 40px 60px;
+      background: #1e1e1e; /* panel base shade */
+      /* skew to give diagonal right edge */
+      transform: skew(-12deg);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+    }
+
+    .loading-inner {
+      /* undo skew for the contents so text etc are straight */
+      transform: skew(12deg);
+    }
+
+    h1.loading-title {
+      font-size: 4rem; /* large */
+      font-weight: 600;
+      color: #f5f5f5;
+      margin-bottom: 30px;
+      letter-spacing: 1px;
+    }
+
+    .progress-bar-wrapper {
+      width: 100%;
+      height: 24px;
+      background: #333;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 40px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #8a00ff, #c700ff); /* vivid purple→pinkish */
+      transition: width 0.5s ease;
+    }
+
+    .ip-display {
+      font-size: 2.5rem;
+      color: #ffeb3b; /* bright yellow for contrast */
+      text-align: center;
+      display: none; /* hidden until loaded */
+      margin-top: 20px;
+      font-weight: bold;
+      text-shadow: 0 0 8px rgba(255, 235, 59, 0.7);
+    }
+  </style>
 </head>
 <body>
-    <div class="message">guns.lol - Loading...</div>
-    <div class="loader"></div>
+  <div class="loading-container">
+    <div class="loading-inner">
+      <h1 class="loading-title">Loading</h1>
+      <div class="progress-bar-wrapper">
+        <div class="progress-bar" id="progress"></div>
+      </div>
+      <div class="ip-display" id="ip-display">
+        Your IP Address:<br><span id="ip-address">Fetching...</span>
+      </div>
+    </div>
+  </div>
 
-    <script>
+  <script>
+    const progressEl = document.getElementById('progress');
+    const ipDisplayEl = document.getElementById('ip-display');
+    const ipSpan = document.getElementById('ip-address');
+
+    let progress = 0;
+
+    const step = () => {
+      // random increments but smooth-ish
+      progress += Math.random() * 25;
+      if (progress > 100) progress = 100;
+      progressEl.style.width = progress + '%';
+
+      if (progress < 100) {
+        setTimeout(step, 400);  // keep going
+      } else {
+        // when full
         setTimeout(() => {
-            document.body.innerHTML = `
-                <div style="text-align: center; color: #fff;">
-                    <h1>Welcome to guns.lol</h1>
-                    <p>Your IP address is: <span id="ip"></span></p>
-                </div>
-            `;
-            fetch('https://api.ipify.org?format=json')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('ip').textContent = data.ip;
-                })
-                .catch(error => {
-                    document.getElementById('ip').textContent = 'Unable to fetch IP';
-                });
-        }, 4000);
-    </script>
+          fetchIP();
+        }, 500);
+      }
+    };
+
+    function fetchIP() {
+      fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(data => {
+          ipSpan.textContent = data.ip;
+          ipDisplayEl.style.display = 'block';
+        })
+        .catch(error => {
+          ipSpan.textContent = 'Unable to fetch IP';
+          ipDisplayEl.style.display = 'block';
+        });
+    }
+
+    // Start the loading/progress simulation
+    step();
+  </script>
 </body>
 </html>
